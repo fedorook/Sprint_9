@@ -44,7 +44,7 @@ jobs:
           --network host \
           -e SELENOID_URI=http://localhost:4444/wd/hub \
           -e BROWSER=chrome \
-          -e BROWSER_VERSION=128.0 \
+          -e BROWSER_VERSION=130.0 \
           -v $(pwd)/allure-results:/app/allure-results \
           sprint9-tests
 
