@@ -32,9 +32,10 @@ def get_default_chrome_options():
 @pytest.fixture
 def driver():
     """Create and configure WebDriver instance with teardown."""
-    server = 'http://selenoid:4444/wd/hub'
+    import os
+    selenoid_uri = os.getenv('SELENOID_URI', 'http://selenoid:4444/wd/hub')
     options = get_default_chrome_options()
-    driver = webdriver.Remote(command_executor=server, options=options)
+    driver = webdriver.Remote(command_executor=selenoid_uri, options=options)
     driver.maximize_window()
     yield driver
     driver.quit()
