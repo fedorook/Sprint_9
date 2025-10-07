@@ -1,0 +1,47 @@
+# Docker Compose configuration for Sprint 9 testing environment
+services:
+  # Selenoid browser automation server
+  selenoid:
+    image: "aerokube/selenoid"
+    container_name: selenoid
+    ports:
+      - "4444:4444"
+    networks:
+      - selenoid
+    volumes:
+      - "./selenoid/browsers.json:/etc/selenoid/browsers.json:ro"  # Browser configuration file
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    command: ["-conf", "/etc/selenoid/browsers.json", "-container-network", "selenoid"]
+
+  # Selenoid UI for monitoring browser sessions
+  selenoid-ui:
+    image: "aerokube/selenoid-ui:latest"
+    container_name: selenoid-ui
+    links:
+      - selenoid
+    ports:
+      - "8081:8080"
+    networks:
+      - selenoid
+    command: ["--selenoid-uri", "http://selenoid:4444"]
+
+  # Test runner container
+  test:
+    build: .
+    container_name: test
+    depends_on:
+      - selenoid
+    networks:
+      - selenoid
+    tty: true
+    volumes:
+      - "./allure-results:/app/allure-results"
+    environment:
+      SELENOID_URI: http://selenoid:4444/wd/hub
+      BROWSER: chrome
+      BROWSER_VERSION: 128.0
+    command: ["pytest", "-v", "--alluredir", "allure-results"]
+
+networks:
+  selenoid:
+    name: selenoid
