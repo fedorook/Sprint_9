@@ -16,24 +16,33 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
+    - name: Pre-pull Chrome image
+      run: |
+        docker pull selenoid/chrome:130.0 || (sleep 5 && docker pull selenoid/chrome:130.0)
+
     - name: Start Selenoid
       run: |
-        docker run -d --name selenoid \
+        docker run -d --name selenoid --restart always \
           -p 4444:4444 \
+          -v ${{ github.workspace }}/selenoid/browsers.json:/etc/selenoid/browsers.json \
           -v /var/run/docker.sock:/var/run/docker.sock \
-          -v $(pwd)/selenoid:/etc/selenoid:ro \
-          aerokube/selenoid
+          aerokube/selenoid:latest-release
 
     - name: Wait for Selenoid to be ready
       run: |
         for i in {1..30}; do
-          if curl -f http://localhost:4444/status; then
+          if curl -sSf http://localhost:4444/status >/dev/null; then
             echo "Selenoid is ready"
             break
           fi
           echo "Waiting for Selenoid... ($i/30)"
           sleep 2
         done
+        if ! curl -sSf http://localhost:4444/status >/dev/null; then
+          echo "Selenoid failed to start"
+          docker logs selenoid
+          exit 1
+        fi
 
     - name: Build test image
       run: docker build -t sprint9-tests .
