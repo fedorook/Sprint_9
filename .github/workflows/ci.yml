@@ -18,7 +18,7 @@ jobs:
 
     - name: Pre-pull Chrome image
       run: |
-        docker pull selenoid/chrome:130.0 || (sleep 5 && docker pull selenoid/chrome:130.0)
+        docker pull selenoid/chrome:121.0 || (sleep 5 && docker pull selenoid/chrome:121.0)
 
     - name: Start Selenoid
       run: |
@@ -53,7 +53,7 @@ jobs:
           --network host \
           -e SELENOID_URI=http://localhost:4444/wd/hub \
           -e BROWSER=chrome \
-          -e BROWSER_VERSION=130.0 \
+          -e BROWSER_VERSION=121.0 \
           -v $(pwd)/allure-results:/app/allure-results \
           sprint9-tests
 
